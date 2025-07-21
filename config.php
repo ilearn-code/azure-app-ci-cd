@@ -1,8 +1,8 @@
 <?php
-$servername = getenv('DB_HOST') ?: 'localhost';
-$username = getenv('DB_USER') ?: 'root';
-$password = getenv('DB_PASS') ?: '';
-$dbname = getenv('DB_NAME') ?: 'demo_db';
+$servername = getenv('DB_HOST') ?: 'satyam-webapp-server';
+$username = getenv('DB_USER') ?: 'ngipxvlxjc';
+$password = getenv('DB_PASS') ?: 'LFpawoeb6$YL$QYq';
+$dbname = getenv('DB_NAME') ?: 'satyam-webapp-database';
 
 try {
     $pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
