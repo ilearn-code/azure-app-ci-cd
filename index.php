@@ -238,55 +238,7 @@ if ($_POST && isset($_POST['action'])) {
 
         <?php if ($dbConnected): ?>
             <div class="section">
-                <h2>🗄️ Database Information</h2>
-                <?php
-                try {
-                    // Get MySQL version
-                    $stmt = $pdo->query("SELECT VERSION() as version");
-                    $version = $stmt->fetch()['version'];
-
-                    // Get current database
-                    $stmt = $pdo->query("SELECT DATABASE() as current_db");
-                    $currentDb = $stmt->fetch()['current_db'];
-
-                    // Get current user - Fixed the syntax error
-                    $stmt = $pdo->query("SELECT USER() as current_user");
-                    $currentUser = $stmt->fetch()['current_user'];
-
-                    // Get database size
-                    $stmt = $pdo->prepare("
-                        SELECT 
-                            ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb
-                        FROM information_schema.tables 
-                        WHERE table_schema = ?
-                    ");
-                    $stmt->execute([$currentDb]);
-                    $dbSize = $stmt->fetch()['size_mb'] ?? 0;
-
-                    // Database info array
-                    $dbInfo = [
-                        'MySQL Version' => $version,
-                        'Current Database' => $currentDb,
-                        'Current User' => $currentUser,
-                        'Database Size' => $dbSize . ' MB',
-                        'Connection Time' => date('Y-m-d H:i:s')
-                    ];
-
-                    echo "<table>";
-                    echo "<tr><th>Database Property</th><th>Value</th></tr>";
-                    foreach ($dbInfo as $key => $value) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($key) . "</td>";
-                        echo "<td>" . htmlspecialchars($value) . "</td>";
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-
-                } catch (PDOException $e) {
-                    echo "<div class='error'>Error fetching database info: " . htmlspecialchars($e->getMessage()) . "</div>";
-                }
-                ?>
-            </div>
+              
 
             <!-- New Section: Add User Form -->
             <div class="section">
