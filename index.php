@@ -238,162 +238,153 @@ if ($_POST && isset($_POST['action'])) {
 
         <?php if ($dbConnected): ?>
             <div class="section">
-              
 
-            <!-- New Section: Add User Form -->
-            <div class="section">
-                <h2>➕ Add New User</h2>
-                <div class="form-container">
-                    <form method="POST" action="">
-                        <input type="hidden" name="action" value="insert">
-                        
-                        <div class="form-group">
-                            <label for="name">Name:</label>
-                            <input type="text" id="name" name="name" required maxlength="100" 
-                                   placeholder="Enter user name">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email:</label>
-                            <input type="email" id="email" name="email" required maxlength="100" 
-                                   placeholder="Enter user email">
-                        </div>
-                        
-                        <button type="submit">Add User</button>
-                        <button type="reset" class="btn-secondary">Clear Form</button>
-                    </form>
+
+                <!-- New Section: Add User Form -->
+                <div class="section">
+                    <h2>➕ Add New User</h2>
+                    <div class="form-container">
+                        <form method="POST" action="">
+                            <input type="hidden" name="action" value="insert">
+
+                            <div class="form-group">
+                                <label for="name">Name:</label>
+                                <input type="text" id="name" name="name" required maxlength="100"
+                                    placeholder="Enter user name">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" name="email" required maxlength="100"
+                                    placeholder="Enter user email">
+                            </div>
+
+                            <button type="submit">Add User</button>
+                            <button type="reset" class="btn-secondary">Clear Form</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- New Section: Display Users Data -->
-            <div class="section">
-                <h2>👥 Users Data</h2>
-                <?php
-                try {
-                    // Create table if it doesn't exist
-                    $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+                <!-- New Section: Display Users Data -->
+                <div class="section">
+                    <h2>👥 Users Data</h2>
+                    <?php
+                    try {
+                        // Create table if it doesn't exist
+                        $pdo->exec("CREATE TABLE IF NOT EXISTS users (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         name VARCHAR(100) NOT NULL,
                         email VARCHAR(100) NOT NULL,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )");
 
-                    // Get all users
-                    $stmt = $pdo->query("SELECT * FROM users ORDER BY created_at DESC");
-                    $users = $stmt->fetchAll();
+                        // Get all users
+                        $stmt = $pdo->query("SELECT * FROM users ORDER BY created_at DESC");
+                        $users = $stmt->fetchAll();
 
-                    if (empty($users)) {
-                        echo "<div class='info'>No users found. Add some users using the form above!</div>";
-                    } else {
-                        echo "<table>";
-                        echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Created At</th></tr>";
-                        
-                        foreach ($users as $user) {
-                            echo "<tr>";
-                            echo "<td>" . htmlspecialchars($user['id']) . "</td>";
-                            echo "<td>" . htmlspecialchars($user['name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($user['email']) . "</td>";
-                            echo "<td>" . htmlspecialchars($user['created_at']) . "</td>";
-                            echo "</tr>";
+                        if (empty($users)) {
+                            echo "<div class='info'>No users found. Add some users using the form above!</div>";
+                        } else {
+                            echo "<table>";
+                            echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Created At</th></tr>";
+
+                            foreach ($users as $user) {
+                                echo "<tr>";
+                                echo "<td>" . htmlspecialchars($user['id']) . "</td>";
+                                echo "<td>" . htmlspecialchars($user['name']) . "</td>";
+                                echo "<td>" . htmlspecialchars($user['email']) . "</td>";
+                                echo "<td>" . htmlspecialchars($user['created_at']) . "</td>";
+                                echo "</tr>";
+                            }
+                            echo "</table>";
+
+                            echo "<p><strong>Total Users:</strong> " . count($users) . "</p>";
                         }
-                        echo "</table>";
-                        
-                        echo "<p><strong>Total Users:</strong> " . count($users) . "</p>";
+
+                    } catch (PDOException $e) {
+                        echo "<div class='error'>Error fetching users: " . htmlspecialchars($e->getMessage()) . "</div>";
                     }
-
-                } catch (PDOException $e) {
-                    echo "<div class='error'>Error fetching users: " . htmlspecialchars($e->getMessage()) . "</div>";
-                }
-                ?>
-            </div>
-
-            <div class="section">
-                <h2>📋 Database Tables</h2>
-                <?php
-                try {
-                    // Show tables
-                    $stmt = $pdo->query("SHOW TABLES");
-                    $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-                    if (empty($tables)) {
-                        echo "<div class='info'>No tables found in the database.</div>";
-                    } else {
-                        echo "<table>";
-                        echo "<tr><th>Table Name</th><th>Actions</th></tr>";
-                        foreach ($tables as $table) {
-                            echo "<tr>";
-                            echo "<td>" . htmlspecialchars($table) . "</td>";
-                            echo "<td><small>Table exists ✅</small></td>";
-                            echo "</tr>";
-                        }
-                        echo "</table>";
-                    }
-
-                } catch (PDOException $e) {
-                    echo "<div class='error'>Error fetching tables: " . htmlspecialchars($e->getMessage()) . "</div>";
-                }
-                ?>
-            </div>
-        <?php else: ?>
-            <div class="section">
-                <h2>🔧 Database Setup Required</h2>
-                <div class="info">
-                    <strong>Database connection is not working.</strong><br>
-                    Please check:
-                    <ul>
-                        <li>Database environment variables are set in Azure App Service</li>
-                        <li>Database server is running and accessible</li>
-                        <li>Firewall rules allow connection from Azure</li>
-                        <li>Database credentials are correct</li>
-                    </ul>
+                    ?>
                 </div>
-            </div>
-        <?php endif; ?>
 
-        <div class="section">
-            <h2>🚀 Deployment Information</h2>
-            <table>
-                <tr>
-                    <th>Property</th>
-                    <th>Value</th>
-                </tr>
-                <tr>
-                    <td>Last Deployment</td>
-                    <td>
-                        <?php
-                        // Get last deployment time from latest git commit
-                        $gitDir = dirname(__FILE__);
-                        $lastCommit = 'Not available';
-                        $output = [];
-                        $returnVar = 1;
-                        // Run git command to get latest commit date
-                        exec('git -C ' . escapeshellarg($gitDir) . ' log -1 --format=%cd --date=iso', $output, $returnVar);
-                        if ($returnVar === 0 && !empty($output[0])) {
-                            $lastCommit = $output[0];
+                <div class="section">
+                    <h2>📋 Database Tables</h2>
+                    <?php
+                    try {
+                        // Show tables
+                        $stmt = $pdo->query("SHOW TABLES");
+                        $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                        if (empty($tables)) {
+                            echo "<div class='info'>No tables found in the database.</div>";
+                        } else {
+                            echo "<table>";
+                            echo "<tr><th>Table Name</th><th>Actions</th></tr>";
+                            foreach ($tables as $table) {
+                                echo "<tr>";
+                                echo "<td>" . htmlspecialchars($table) . "</td>";
+                                echo "<td><small>Table exists ✅</small></td>";
+                                echo "</tr>";
+                            }
+                            echo "</table>";
                         }
-                        echo htmlspecialchars($lastCommit);
-                        ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Server Time</td>
-                    <td><?= date('Y-m-d H:i:s') ?></td>
-                </tr>
-                <tr>
-                    <td>User Agent</td>
-                    <td><?= htmlspecialchars($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') ?></td>
-                </tr>
-                <tr>
-                    <td>Request Method</td>
-                    <td><?= htmlspecialchars($_SERVER['REQUEST_METHOD'] ?? 'Unknown') ?></td>
-                </tr>
-                <tr>
-                    <td>Request URI</td>
-                    <td><?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? 'Unknown') ?></td>
-                </tr>
-            </table>
+
+                    } catch (PDOException $e) {
+                        echo "<div class='error'>Error fetching tables: " . htmlspecialchars($e->getMessage()) . "</div>";
+                    }
+                    ?>
+                </div>
+            <?php else: ?>
+                <div class="section">
+                    <h2>🔧 Database Setup Required</h2>
+                    <div class="info">
+                        <strong>Database connection is not working.</strong><br>
+                        Please check:
+                        <ul>
+                            <li>Database environment variables are set in Azure App Service</li>
+                            <li>Database server is running and accessible</li>
+                            <li>Firewall rules allow connection from Azure</li>
+                            <li>Database credentials are correct</li>
+                        </ul>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <div class="section">
+                <h2>🚀 Deployment Information</h2>
+                <table>
+                    <tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>Last Deployment</td>
+                        <td>
+                            <?php
+                            // Show when this file was last modified (deployment time)
+                            echo date('Y-m-d H:i:s', filemtime(__FILE__));
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Server Time</td>
+                        <td><?= date('Y-m-d H:i:s') ?></td>
+                    </tr>
+                    <tr>
+                        <td>User Agent</td>
+                        <td><?= htmlspecialchars($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown') ?></td>
+                    </tr>
+                    <tr>
+                        <td>Request Method</td>
+                        <td><?= htmlspecialchars($_SERVER['REQUEST_METHOD'] ?? 'Unknown') ?></td>
+                    </tr>
+                    <tr>
+                        <td>Request URI</td>
+                        <td><?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? 'Unknown') ?></td>
+                    </tr>
+                </table>
+            </div>
         </div>
-    </div>
 </body>
 
 </html>
