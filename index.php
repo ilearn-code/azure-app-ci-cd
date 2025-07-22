@@ -207,7 +207,7 @@ if ($_POST && isset($_POST['action'])) {
                 'Database User' => getenv('DB_USER') ?: 'Not configured',
                 'Max Users' => 100,
                 'Feature Flag' => true,
-                'SSL Enabled' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'
+                'SSL Enabled' => true
             ];
 
             // Display settings in a table
