@@ -359,7 +359,21 @@ if ($_POST && isset($_POST['action'])) {
                 </tr>
                 <tr>
                     <td>Last Deployment</td>
-                    <td><?= date('Y-m-d H:i:s') ?></td>
+                    <td>
+                        <?php
+                        // Get last deployment time from latest git commit
+                        $gitDir = dirname(__FILE__);
+                        $lastCommit = 'Not available';
+                        $output = [];
+                        $returnVar = 1;
+                        // Run git command to get latest commit date
+                        exec('git -C ' . escapeshellarg($gitDir) . ' log -1 --format=%cd --date=iso', $output, $returnVar);
+                        if ($returnVar === 0 && !empty($output[0])) {
+                            $lastCommit = $output[0];
+                        }
+                        echo htmlspecialchars($lastCommit);
+                        ?>
+                    </td>
                 </tr>
                 <tr>
                     <td>Server Time</td>
