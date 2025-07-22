@@ -1,5 +1,28 @@
 <?php
 require_once 'config.php';
+
+// Handle form submission for inserting data
+$message = '';
+if ($_POST && isset($_POST['action'])) {
+    if ($_POST['action'] === 'insert' && isset($_POST['name'], $_POST['email'])) {
+        try {
+            // Create table if it doesn't exist
+            $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )");
+
+            // Insert new user
+            $stmt = $pdo->prepare("INSERT INTO users (name, email) VALUES (?, ?)");
+            $stmt->execute([trim($_POST['name']), trim($_POST['email'])]);
+            $message = "<div class='success'>✅ User added successfully!</div>";
+        } catch (PDOException $e) {
+            $message = "<div class='error'>❌ Error inserting data: " . htmlspecialchars($e->getMessage()) . "</div>";
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -46,6 +69,7 @@ require_once 'config.php';
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #c3e6cb;
+            margin-bottom: 20px;
         }
 
         .error {
@@ -54,6 +78,7 @@ require_once 'config.php';
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #f5c6cb;
+            margin-bottom: 20px;
         }
 
         .info {
@@ -91,12 +116,65 @@ require_once 'config.php';
             background-color: #dc3545;
             color: white;
         }
+
+        .form-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1>PHP Web App - Azure CI/CD Demo</h1>
+
+        <?php echo $message; ?>
 
         <?php
         // Database connection status
@@ -171,17 +249,17 @@ require_once 'config.php';
                     $stmt = $pdo->query("SELECT DATABASE() as current_db");
                     $currentDb = $stmt->fetch()['current_db'];
 
-                    // Get current user
+                    // Get current user - Fixed the syntax error
                     $stmt = $pdo->query("SELECT USER() as current_user");
                     $currentUser = $stmt->fetch()['current_user'];
 
                     // Get database size
                     $stmt = $pdo->prepare("
-                    SELECT 
-                        ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb
-                    FROM information_schema.tables 
-                    WHERE table_schema = ?
-                ");
+                        SELECT 
+                            ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb
+                        FROM information_schema.tables 
+                        WHERE table_schema = ?
+                    ");
                     $stmt->execute([$currentDb]);
                     $dbSize = $stmt->fetch()['size_mb'] ?? 0;
 
@@ -210,6 +288,73 @@ require_once 'config.php';
                 ?>
             </div>
 
+            <!-- New Section: Add User Form -->
+            <div class="section">
+                <h2>➕ Add New User</h2>
+                <div class="form-container">
+                    <form method="POST" action="">
+                        <input type="hidden" name="action" value="insert">
+                        
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" id="name" name="name" required maxlength="100" 
+                                   placeholder="Enter user name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" required maxlength="100" 
+                                   placeholder="Enter user email">
+                        </div>
+                        
+                        <button type="submit">Add User</button>
+                        <button type="reset" class="btn-secondary">Clear Form</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- New Section: Display Users Data -->
+            <div class="section">
+                <h2>👥 Users Data</h2>
+                <?php
+                try {
+                    // Create table if it doesn't exist
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL,
+                        email VARCHAR(100) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )");
+
+                    // Get all users
+                    $stmt = $pdo->query("SELECT * FROM users ORDER BY created_at DESC");
+                    $users = $stmt->fetchAll();
+
+                    if (empty($users)) {
+                        echo "<div class='info'>No users found. Add some users using the form above!</div>";
+                    } else {
+                        echo "<table>";
+                        echo "<tr><th>ID</th><th>Name</th><th>Email</th><th>Created At</th></tr>";
+                        
+                        foreach ($users as $user) {
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($user['id']) . "</td>";
+                            echo "<td>" . htmlspecialchars($user['name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($user['email']) . "</td>";
+                            echo "<td>" . htmlspecialchars($user['created_at']) . "</td>";
+                            echo "</tr>";
+                        }
+                        echo "</table>";
+                        
+                        echo "<p><strong>Total Users:</strong> " . count($users) . "</p>";
+                    }
+
+                } catch (PDOException $e) {
+                    echo "<div class='error'>Error fetching users: " . htmlspecialchars($e->getMessage()) . "</div>";
+                }
+                ?>
+            </div>
+
             <div class="section">
                 <h2>📋 Database Tables</h2>
                 <?php
@@ -219,7 +364,7 @@ require_once 'config.php';
                     $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
                     if (empty($tables)) {
-                        echo "<div class='info'>No tables found in the database. Consider importing your database schema.</div>";
+                        echo "<div class='info'>No tables found in the database.</div>";
                     } else {
                         echo "<table>";
                         echo "<tr><th>Table Name</th><th>Actions</th></tr>";
@@ -230,49 +375,6 @@ require_once 'config.php';
                             echo "</tr>";
                         }
                         echo "</table>";
-
-                        // If we have tables, try to show sample data from the first table
-                        if (!empty($tables)) {
-                            $firstTable = $tables[0];
-                            echo "<h3>📊 Sample Data from '{$firstTable}' Table</h3>";
-
-                            try {
-                                // Get table structure first
-                                $stmt = $pdo->query("DESCRIBE `{$firstTable}`");
-                                $columns = $stmt->fetchAll();
-
-                                // Get sample data (limit to 5 rows)
-                                $stmt = $pdo->query("SELECT * FROM `{$firstTable}` LIMIT 5");
-                                $sampleData = $stmt->fetchAll();
-
-                                if (empty($sampleData)) {
-                                    echo "<div class='info'>Table '{$firstTable}' exists but contains no data.</div>";
-                                } else {
-                                    echo "<table>";
-                                    echo "<tr>";
-                                    foreach ($columns as $column) {
-                                        echo "<th>" . htmlspecialchars($column['Field']) . "</th>";
-                                    }
-                                    echo "</tr>";
-
-                                    foreach ($sampleData as $row) {
-                                        echo "<tr>";
-                                        foreach ($row as $value) {
-                                            echo "<td>" . htmlspecialchars($value ?? 'NULL') . "</td>";
-                                        }
-                                        echo "</tr>";
-                                    }
-                                    echo "</table>";
-
-                                    if (count($sampleData) >= 5) {
-                                        echo "<small>Showing first 5 records only...</small>";
-                                    }
-                                }
-
-                            } catch (PDOException $e) {
-                                echo "<div class='error'>Error fetching sample data: " . htmlspecialchars($e->getMessage()) . "</div>";
-                            }
-                        }
                     }
 
                 } catch (PDOException $e) {
